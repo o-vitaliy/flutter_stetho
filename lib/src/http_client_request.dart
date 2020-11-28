@@ -10,7 +10,9 @@ import 'package:flutter_stetho/src/utils.dart';
 class StethoHttpClientRequest implements HttpClientRequest {
   final HttpClientRequest request;
   final String id;
-  final StreamController<List<int>> _streamController = StreamController.broadcast();
+  final StreamController<List<int>> _streamController =
+      StreamController.broadcast();
+
   Stream get stream => _streamController.stream.asBroadcastStream();
 
   StethoHttpClientRequest(
@@ -32,7 +34,7 @@ class StethoHttpClientRequest implements HttpClientRequest {
   @override
   Future addStream(Stream<List<int>> stream) {
     var newStream = stream.asBroadcastStream();
-    newStream.listen((onData)=> _streamController.add(onData));
+    newStream.listen((onData) => _streamController.add(onData));
     return request.addStream(newStream);
   }
 
@@ -139,10 +141,15 @@ class StethoHttpClientRequest implements HttpClientRequest {
   @override
   void writeln([Object obj = ""]) {
     request.writeln(obj);
-    if (obj is String){
+    if (obj is String) {
       _streamController.add(obj.codeUnits);
     } else {
       _streamController.add(obj.toString().codeUnits);
     }
+  }
+
+  @override
+  void abort([Object exception, StackTrace stackTrace]) {
+    request.addError(exception, stackTrace);
   }
 }
